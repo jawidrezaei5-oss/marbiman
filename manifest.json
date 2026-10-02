@@ -2,7 +2,7 @@
   "name": "مربی من | دستیار مطالعه و کانکور",
   "short_name": "مربی من",
   "description": "مربی مطالعه، برنامه‌ریز و دستیار آمادگی کانکور",
-  "start_url": "./Marbi_Mn_pwa.html",
+  "start_url": "./index.html"
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
