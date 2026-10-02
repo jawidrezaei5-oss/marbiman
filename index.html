@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>مربی من | دستیار مطالعه و کانکور</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Tahoma,Arial,sans-serif;background:#f5f7fb;color:#172033}
+header{background:#16213e;color:white;padding:18px;text-align:center;position:sticky;top:0;z-index:5}
+header h1{margin:0 0 6px;font-size:22px}.sub{opacity:.85;font-size:13px}
+nav{display:flex;gap:6px;overflow:auto;padding:8px;background:white;position:sticky;top:74px;z-index:4;border-bottom:1px solid #ddd}
+nav button{border:0;background:#eef2f7;padding:9px 12px;border-radius:10px;white-space:nowrap;cursor:pointer}
+nav button.active{background:#16213e;color:#fff}
+main{max-width:1050px;margin:auto;padding:15px}.tab{display:none}.tab.active{display:block}
+.card{background:white;border-radius:16px;padding:16px;margin:12px 0;box-shadow:0 4px 16px #0000000b}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+input,select,textarea{width:100%;padding:10px;border:1px solid #d7dce5;border-radius:10px;font-family:inherit}
+button.primary{background:#2563eb;color:#fff;border:0;padding:10px 14px;border-radius:10px;cursor:pointer}
+button.danger{background:#fee2e2;color:#991b1b;border:0;padding:7px 10px;border-radius:8px}
+.small{font-size:12px;color:#687386}.big{font-size:30px;font-weight:bold}.muted{color:#687386}
+.stat{padding:15px;border-radius:14px;background:#f0f5ff}.row{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.task{display:flex;gap:9px;align-items:center;padding:10px;border-bottom:1px solid #eee}.task:last-child{border-bottom:0}
+.done{text-decoration:line-through;color:#8a93a3}.badge{padding:4px 8px;border-radius:20px;font-size:11px;background:#e8eefc}
+.poem{background:linear-gradient(135deg,#fffdf5,#f7efe0);border-right:5px solid #c98b2e;line-height:2.15;font-size:15px;white-space:pre-line}
+.poem-title{font-weight:bold;color:#8a5a16;margin-bottom:8px}
+.countdown{background:linear-gradient(135deg,#16213e,#2563eb);color:white}
+.countdown .big{font-size:38px}.important{border-right:4px solid #f59e0b}
+.calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}.calhead,.calday{padding:7px;text-align:center}.calhead{font-size:12px;font-weight:bold;color:#687386}
+.calday{min-height:55px;background:#f8fafc;border-radius:9px;cursor:pointer;position:relative}.calday.empty{background:transparent;cursor:default}
+.calday.today{outline:2px solid #2563eb}.calday.selected{background:#dbeafe}.calday.event:after{content:"";width:6px;height:6px;border-radius:50%;background:#f59e0b;position:absolute;bottom:6px;left:50%;transform:translateX(-50%)}
+.monthchart{display:grid;grid-template-columns:repeat(12,1fr);gap:5px;align-items:end;height:180px}.mbar{background:#2563eb;border-radius:7px 7px 2px 2px;min-height:3px}.mcol{display:flex;flex-direction:column;align-items:center;justify-content:end;height:100%;gap:5px;font-size:10px}.mval{font-size:10px;color:#687386}.blockday{background:#ecfdf5!important;border-right:3px solid #10b981}.plan-chip{font-size:10px;display:block;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.plan-day{font-size:9px;color:#047857}.plan-row{border-right:4px solid #10b981}.progress{height:12px;background:#e8edf5;border-radius:20px;overflow:hidden}.bar{height:100%;background:#2563eb}
+table{width:100%;border-collapse:collapse}td,th{padding:8px;border-bottom:1px solid #eee;text-align:right}
+footer{text-align:center;color:#7b8492;font-size:12px;padding:25px}
+@media(max-width:600px){main{padding:9px}.calendar{gap:3px}.calday{min-height:48px;font-size:13px}.countdown .big{font-size:31px}}
+
+.plan-done{border:2px solid #1f9d55!important;background:#e9f8ef!important}.plan-missed{border:2px solid #d64545!important;background:#fff0f0!important}.schedule-row{margin:7px 0}.schedule-row input{min-width:0}.done{text-decoration:line-through;opacity:.65}
+</style>
+
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0f766e">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="apple-touch-icon" href="icon-192.png">
+</head>
+<body>
+<div id="installPwaBar" style="position:sticky;top:0;z-index:9999;display:none;padding:8px;text-align:center;background:#0f766e;color:white">
+<button id="installPwaBtn" style="border:0;border-radius:10px;padding:10px 16px;font-weight:700;background:white;color:#0f766e">📲 نصب مربی من روی صفحه اصلی</button>
+</div>
+
+<header>
+<h1>📚 مربی من</h1><div class="muted">دستیار مطالعه و کانکور</div>
+<div class="sub">تقویم هجری شمسی افغانستان • برنامه‌ریزی • اهداف • شمارش معکوس</div>
+</header>
+<nav id="nav"></nav>
+<main id="app"></main>
+<footer>اطلاعات این برنامه در همین مرورگر ذخیره می‌شود.</footer>
+
+<script>
+const months=['حمل','ثور','جوزا','سرطان','اسد','سنبله','میزان','عقرب','قوس','جدی','دلو','حوت'];
+const weekdays=['شنبه','یکشنبه','دوشنبه','سه‌شنبه','چهارشنبه','پنجشنبه','جمعه'];
+const tabs=[
+ ['home','خانه'],['calendar','تقویم'],['daily','روزانه'],['planner','برنامه‌چین'],['goals','اهداف سالانه'],['progress','پیشرفت'],['countdown','تاریخ‌های مهم'],['ai','مربی هوشمند']
+];
+const faDigits=s=>String(s).replace(/[0-9]/g,c=>'۰۱۲۳۴۵۶۷۸۹'[c]);
+const enDigits=s=>String(s).replace(/[۰-۹]/g,c=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(c));
+const pad=n=>String(n).padStart(2,'0');
+
+function gKey(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())}
+function fromKey(k){let [y,m,d]=k.split('-').map(Number);return new Date(y,m-1,d,12)}
+function addDays(d,n){let x=new Date(d);x.setDate(x.getDate()+n);return x}
+function daysBetween(a,b){return Math.round((b-a)/86400000)}
+
+function div(a,b){return Math.floor(a/b)}
+function jalaliToGregorian(jy,jm,jd){
+ let y=jy+1595;
+ let days=-355668+365*y+div(y,33)*8+div((y%33)+3,4)+jd+(jm<7?(jm-1)*31:(jm-1)*30+6);
+ let gy=400*div(days,146097); days%=146097;
+ if(days>36524){gy+=100*div(--days,36524);if(days>=365)days++}
+ gy+=4*div(days,1461);days%=1461;
+ if(days>365){gy+=div(days-1,365);days=(days-1)%365}
+ let gd=days+1, gm=1;
+ const md=[31,28,31,30,31,30,31,31,30,31,30,31];
+ while(gm<=12){
+   let lim=md[gm-1];
+   if(gm===2 && ((gy%4===0&&gy%100!==0)||gy%400===0))lim=29;
+   if(gd<=lim)break;gd-=lim;gm++;
+ }
+ return [gy,gm,gd];
+}
+function gregorianToJalali(gy,gm,gd){
+ const gdm=[0,31,59,90,120,151,181,212,243,273,304,334];
+ let jy=gy>1600?979:0; gy-=gy>1600?1600:621;
+ let gy2=gm>2?gy+1:gy;
+ let days=365*gy+div(gy2+3,4)-div(gy2+99,100)+div(gy2+399,400)-80+gd+gdm[gm-1];
+ jy+=33*div(days,12053);days%=12053;
+ jy+=4*div(days,1461);days%=1461;
+ if(days>365){jy+=div(days-1,365);days=(days-1)%365}
+ let jm=days<186?1+div(days,31):7+div(days-186,30);
+ let jd=1+(days<186?days%31:(days-186)%30);
+ return [jy,jm,jd];
+}
+function jToday(d=new Date()){return gregorianToJalali(d.getFullYear(),d.getMonth()+1,d.getDate())}
+function jText(jy,jm,jd){return faDigits(jd)+' '+months[jm-1]+' '+faDigits(jy)}
+function jKey(jy,jm,jd){return `${jy}/${pad(jm)}/${pad(jd)}`}
+function jLeap(jy){
+ const a=jalaliToGregorian(jy,1,1),b=jalaliToGregorian(jy+1,1,1);
+ return daysBetween(new Date(...a.map((v,i)=>i===1?v-1:v)),new Date(...b.map((v,i)=>i===1?v-1:v)))===366;
+}
+function jMonthDays(y,m){if(m<=6)return 31;if(m<=11)return 30;return jLeap(y)?30:29}
+function keyToJ(k){return jToday(fromKey(k))}
+function dateFromJ(y,m,d){let g=jalaliToGregorian(y,m,d);return new Date(g[0],g[1]-1,g[2],12)}
+
+let db;
+try{db=JSON.parse(localStorage.getItem('studyflow_afghan')||'null')}catch(e){}
+if(!db) db={days:{},monthly:[],weekly:[],goals:{year:[],month:[],week:[]},events:[
+ {id:'kankor',title:'کانکور',y:1406,m:2,d:20}
+],classActivities:{},settings:{selected:gKey(new Date())}};
+db.classActivities=db.classActivities||{};
+db.events=db.events||[{id:'kankor',title:'کانکور',y:1406,m:2,d:20}];
+db.goals=db.goals||{year:[],month:[],week:[]};
+db.days=db.days||{};db.monthly=db.monthly||[];db.settings=db.settings||{selected:gKey(new Date())};db.blockPlans=db.blockPlans||[];db.activeBlockPlanId=db.activeBlockPlanId||null;db.schedules=db.schedules||{};db.mistakes=db.mistakes||{};db.goalYear=db.goalYear||[];
+// اصلاح تاریخ پیش‌فرض کانکور در داده‌های قدیمی
+if(db.events){const ke=db.events.find(e=>e.id==='kankor');if(ke){ke.y=1406;ke.m=2;ke.d=20;}}
+
+function save(){localStorage.setItem('studyflow_afghan',JSON.stringify(db))}
+
+function dayData(key){if(!db.days[key])db.days[key]={tasks:[],minutes:0};return db.days[key]}
+function selectedDate(){return fromKey(db.settings.selected)}
+function setSelected(d){db.settings.selected=gKey(d);save();render()}
+function currentJ(){return jToday(selectedDate())}
+function eventOnDate(d){
+ const j=jToday(d);return db.events.some(e=>e.y===j[0]&&e.m===j[1]&&e.d===j[2])
+}
+
+function renderNav(){
+ nav.innerHTML=tabs.map((x,i)=>`<button onclick="showTab('${x[0]}')" id="n_${x[0]}">${x[1]}</button>`).join('');
+}
+let active='home';
+function showTab(t){active=t;render()}
+function render(){
+ renderNav();
+ document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
+ const nb=document.getElementById('n_'+active);if(nb)nb.classList.add('active');
+ const f={home:home,calendar:calendar,daily:daily,planner:planner,goals:goals,progress:progress,countdown:countdown,ai:ai}[active];
+ app.innerHTML=f();
+}
+function headerDate(){
+ const j=currentJ();
+ return `<div class="small">امروز: ${jText(j[0],j[1],j[2])}</div>`;
+}
+function home(){
+ const ev=db.events.map(e=>{let ed=dateFromJ(e.y,e.m,e.d);return {...e,days:daysBetween(new Date(),ed)} }).sort((a,b)=>Math.abs(a.days)-Math.abs(b.days));
+ return `<div class="card"><h2>سلام 👋</h2>${headerDate()}</div>
+ <div class="card poem"><div class="poem-title">🌱 برای شروع روز</div>منتظر هرگز نباشی فرصتی در کار نیست<br>دست روی دست رسم آدم هوشیار نیست<br>منتظر بودن شبیه مردن تدریجی است<br>روزی رفته در کتاب زندگی تکرار نیست<br>پله ها را یک به یک باید نفس زد تا رسید<br>هیچ راهی بی تحمل ساده و هموار نیست<br>هر کسی از نقطه کوچک قدم آغاز کرد<br>هر نویسنده از اول صاحب آثار نیست<br>در مسیر زندگی تکیه بر این و آن مکن<br>کس نمی‌سوزد دلش بر حال کس غمخوار نیست<br>عشق و کوشش، صبر و ایمان رمز فتح زندگی‌ست<br>زندگی تلخ است و شیرین، دائماً دشوار نیست.</div>
+ ${ev.map(countdownCard).join('') || '<div class="card muted">هنوز روزشماری ثبت نشده است.</div>'}`;
+}
+function countdownCard(e){
+ const target=dateFromJ(e.y,e.m,e.d),now=new Date();
+ const diff=Math.ceil((new Date(target.getFullYear(),target.getMonth(),target.getDate())-new Date(now.getFullYear(),now.getMonth(),now.getDate()))/86400000);
+ let label=diff>=0?`تا ${e.title}`:`از ${e.title} گذشته`;
+ return `<div class="card countdown"><div>${label}</div><div class="big">${faDigits(Math.abs(diff))} روز</div><div>${jText(e.y,e.m,e.d)}</div></div>`;
+}
+function addQuick(){
+ let t=document.getElementById('quickTask').value.trim();if(!t)return;
+ dayData(db.settings.selected).tasks.push({id:Date.now(),title:t,subject:quickSub.value,done:false,priority:'متوسط'});
+ save();render();
+}
+function calendar(){
+ const [y,m,d]=currentJ();
+ let first=dateFromJ(y,m,1), start=(first.getDay()+1)%7, n=jMonthDays(y,m);
+ let cells='';
+ weekdays.forEach(w=>cells+=`<div class="calhead">${w}</div>`);
+ for(let i=0;i<start;i++)cells+=`<div class="calday empty"></div>`;
+ for(let x=1;x<=n;x++){
+   const gd=dateFromJ(y,m,x),key=gKey(gd),sel=key===db.settings.selected?' selected':'',today=gKey(new Date())===key?' today':'',ev=eventOnDate(gd)?' event':'';
+   const pp=getPlanForDate(key);const ps=pp?.status==='done'?' plan-done':pp?.status==='missed'?' plan-missed':'';cells+=`<div class="calday${sel}${today}${ev}${pp?' blockday':''}${ps}" onclick="setSelected(dateFromJ(${y},${m},${x}))"><b>${faDigits(x)}</b><br><span class="small">${dayData(key).tasks.length?faDigits(dayData(key).tasks.length)+' کار':''}</span>${pp?`<span class="plan-chip">${pp.subject}</span><span class="plan-day">روز ${faDigits(pp.dayNo)} از ${faDigits(pp.totalDays)}${pp.pages?` • ${faDigits(pp.pages)} صفحه`:''}</span>`:''}</div>`;
+ }
+ return `<div class="card"><div class="row"><button class="primary" onclick="changeMonth(-1)">ماه قبل</button><h2>${months[m-1]} ${faDigits(y)}</h2><button class="primary" onclick="changeMonth(1)">ماه بعد</button></div><div class="calendar">${cells}</div><p class="small">نقطه نارنجی = تاریخ مهم. روز آبی = انتخاب‌شده.</p></div>`;
+}
+function changeMonth(delta){
+ let [y,m]=currentJ();m+=delta;if(m<1){m=12;y--}if(m>12){m=1;y++}
+ setSelected(dateFromJ(y,m,1));
+}
+function daily(){
+ const key=db.settings.selected;const pp=getPlanForDate(key),d=dayData(key),j=currentJ();
+ let tasks=d.tasks.map((t,i)=>`<div class="task"><input type="checkbox" ${t.done?'checked':''} onchange="toggleTask(${i})"><span class="${t.done?'done':''}" style="flex:1">${t.title}<br><small>${t.subject} • ${t.priority}</small></span><button class="danger" onclick="delTask(${i})">حذف</button></div>`).join('');
+ return `${pp?`<div class="card"><div class="stat"><b>📌 برنامه اصلی امروز: ${pp.subject}</b><br><span class="small">روز ${faDigits(pp.dayNo)} از ${faDigits(pp.totalDays)}${pp.pages?` • ${faDigits(pp.pages)} صفحه`:''}</span><br><br><button class="primary" onclick="updatePlanStatus('${key}','done')">☑ انجام شده</button> <button onclick="updatePlanStatus('${key}','missed')">✕ انجام نشده</button></div></div>`:''}<div class="card"><div class="row"><button class="primary" onclick="setSelected(addDays(selectedDate(),-1))">روز قبل</button><h2>${jText(j[0],j[1],j[2])}</h2><button class="primary" onclick="setSelected(addDays(selectedDate(),1))">روز بعد</button></div></div>
+ <div class="card"><h3>کارهای روزانه</h3>${tasks||'<p class="muted">هنوز کاری برای این روز ثبت نشده.</p>'}
+ <hr><div class="grid"><input id="taskTitle" placeholder="عنوان کار"><select id="taskSub"><option>ریاضی</option><option>فیزیک</option><option>کیمیا</option><option>بیولوژی</option><option>تفسیر</option><option>دینی</option><option>دری</option><option>پشتو</option><option>تاریخ</option><option>جغرافیه</option><option>جیولوجی</option><option>سایر</option></select><select id="priority"><option>کم</option><option selected>متوسط</option><option>زیاد</option></select></div><br><button class="primary" onclick="addTask()">افزودن کار</button></div>
+ <div class="card"><h3>🏫 فعالیت صنف</h3><p>${(db.classActivities||{})[key]||'<span class="muted">برای امروز فعالیتی ثبت نشده است.</span>'}</p></div>
+ <div class="card"><h3>⏰ برنامه ساعتی امروز</h3><p class="small">زمان‌بندی است، نه تایمر. هر بخش را خودت وارد کن.</p><div id="timeRows">${(db.schedules[key]||[]).map((x,i)=>`<div class="grid schedule-row"><input value="${x.start||''}" placeholder="شروع"><input value="${x.end||''}" placeholder="پایان"><input value="${x.title||''}" placeholder="مثلاً ریاضی / مکتب / صبحانه"><button class="danger" onclick="removeSchedule(${i})">🗑️</button></div>`).join('')||''}</div><br><button onclick="addScheduleRow()">+ افزودن بخش زمانی</button> <button class="primary" onclick="saveSchedule()">ذخیره زمان‌بندی</button></div>
+ <div class="card"><h3>⚠️ اشتباهات امروز برای مربی</h3><textarea id="todayMistakes" rows="4" placeholder="مثلاً دیر بیدار شدم، برنامه کیمیا را انجام ندادم...">${db.mistakes[key]||''}</textarea><br><br><button class="primary" onclick="saveMistakes()">ذخیره اشتباهات</button></div>`;
+}
+function addTask(){let title=taskTitle.value.trim();if(!title)return;dayData(db.settings.selected).tasks.push({id:Date.now(),title,subject:taskSub.value,priority:priority.value,done:false});save();render()}
+function toggleTask(i){dayData(db.settings.selected).tasks[i].done=!dayData(db.settings.selected).tasks[i].done;save();render()}
+function delTask(i){dayData(db.settings.selected).tasks.splice(i,1);save();render()}
+
+function addScheduleRow(){const box=document.getElementById('timeRows');if(box)box.insertAdjacentHTML('beforeend',`<div class="grid schedule-row"><input placeholder="شروع"><input placeholder="پایان"><input placeholder="مثلاً مطالعه / مکتب / صبحانه"><button class="danger" onclick="this.parentElement.remove()">🗑️</button></div>`)}
+function removeSchedule(i){const rows=[...(document.querySelectorAll('#timeRows .schedule-row'))];if(rows[i])rows[i].remove()}
+function saveSchedule(){const rows=[...document.querySelectorAll('#timeRows .schedule-row')];db.schedules[db.settings.selected]=rows.map(r=>({start:r.children[0].value,end:r.children[1].value,title:r.children[2].value})).filter(x=>x.title||x.start||x.end);save();render()}
+function saveMistakes(){db.mistakes[db.settings.selected]=document.getElementById('todayMistakes').value.trim();save();render()}
+
+function monthly(){
+ const [y,m]=currentJ();let items=db.monthly.filter(x=>x.y===y&&x.m===m);
+ return `<div class="card"><div class="row"><button class="primary" onclick="changeMonth(-1)">ماه قبل</button><h2>برنامه ${months[m-1]} ${faDigits(y)}</h2><button class="primary" onclick="changeMonth(1)">ماه بعد</button></div></div>
+ <div class="card"><div class="grid"><input id="mi" placeholder="هدف/کار ماهانه"><button class="primary" onclick="addMonthly()">افزودن</button></div><hr>${items.map((x,i)=>`<div class="task"><span style="flex:1">${x.title}</span><button class="danger" onclick="delMonthly('${x.id}')">حذف</button></div>`).join('')||'<p class="muted">برای این ماه برنامه‌ای ثبت نشده.</p>'}</div>`;
+}
+function addMonthly(){let title=mi.value.trim();if(!title)return;let [y,m]=currentJ();db.monthly.push({id:Date.now()+'',title,y,m});save();render()}
+function delMonthly(id){db.monthly=db.monthly.filter(x=>x.id!==id);save();render()}
+function weekly(){
+ const start=addDays(selectedDate(),-((selectedDate().getDay()+1)%7));
+ let rows='';
+ for(let i=0;i<7;i++){let d=addDays(start,i),k=gKey(d),j=jToday(d),dd=dayData(k),done=dd.tasks.filter(x=>x.done).length;rows+=`<div class="task"><span style="flex:1"><b>${weekdays[i]}</b> — ${jText(j[0],j[1],j[2])}</span><span>${faDigits(done)}/${faDigits(dd.tasks.length)} کار</span><button class="primary" onclick="setSelected(fromKey('${k}'))">باز کردن</button></div>`}
+ return `<div class="card"><h2>برنامه هفته</h2>${rows}</div>`;
+}
+function getPlanForDate(key){
+ const pid=db.activeBlockPlanId;
+ if(!pid)return null;
+ const p=db.blockPlans.find(x=>x.id===pid); if(!p)return null;
+ return p.days[key]||null;
+}
+function blockPlanDates(plan){
+ const out={}; let offset=0;
+ plan.blocks.forEach((b,bi)=>{for(let i=0;i<b.days;i++){let d=addDays(fromKey(plan.startKey),offset++);let k=gKey(d);out[k]={subject:b.subject,dayNo:i+1,totalDays:b.days,blockIndex:bi};}});
+ return out;
+}
+function addPlanBlock(){
+ const box=document.getElementById('blockRows'); if(!box)return;
+ const n=box.children.length+1;
+ box.insertAdjacentHTML('beforeend',`<div class="grid plan-input"><input placeholder="نام مضمون ${faDigits(n)}"><input type="number" min="1" placeholder="تعداد روز"><input type="number" min="1" placeholder="تعداد صفحات"><button class="danger" onclick="this.parentElement.remove()">🗑️</button></div>`);
+}
+function makeBlockPlan(){
+ const rows=[...document.querySelectorAll('#blockRows .plan-input')];
+ const blocks=rows.map(r=>({subject:r.children[0].value.trim(),days:Number(r.children[1].value),pages:Number(r.children[2].value)||0})).filter(x=>x.subject&&x.days>0);
+ if(!blocks.length)return alert('حداقل یک مضمون و تعداد روز وارد کن.');
+ const start=dateFromJ(Number(enDigits(document.getElementById('planStartY').value)),Number(document.getElementById('planStartM').value),Number(enDigits(document.getElementById('planStartD').value)));
+ if(isNaN(start.getTime()))return alert('تاریخ شروع را درست وارد کن.');
+ const id=Date.now()+''; const plan={id,title:'برنامه اصلی',startKey:gKey(start),blocks}; plan.days=blockPlanDates(plan);
+ db.blockPlans=[plan];db.activeBlockPlanId=id;save();render();
+}
+function blockPlanDates(plan){
+ const out={}; let offset=0;
+ plan.blocks.forEach((b,bi)=>{for(let i=0;i<b.days;i++){let d=addDays(fromKey(plan.startKey),offset++);let k=gKey(d);let pages=b.pages||0;let base=pages?Math.floor(pages/b.days):0;let rem=pages?pages%b.days:0;out[k]={subject:b.subject,dayNo:i+1,totalDays:b.days,blockIndex:bi,pages:base+(i<rem?1:0),status:'pending'};}});
+ const saved=plan.statuses||{};Object.keys(out).forEach(k=>{if(saved[k])out[k].status=saved[k]});return out;
+}
+function updatePlanStatus(key,status){const p=db.blockPlans.find(x=>x.id===db.activeBlockPlanId);if(!p)return; p.statuses=p.statuses||{};p.statuses[key]=status;p.days=blockPlanDates(p);save();render();}
+function deletePlan(){if(!db.activeBlockPlanId)return;db.blockPlans=db.blockPlans.filter(x=>x.id!==db.activeBlockPlanId);db.activeBlockPlanId=null;save();render();}
+function planner(){
+ const p=db.blockPlans.find(x=>x.id===db.activeBlockPlanId);const j=currentJ();
+ const rows=p?p.blocks.map((b,i)=>{let offset=p.blocks.slice(0,i).reduce((s,x)=>s+x.days,0);let a=addDays(fromKey(p.startKey),offset),z=addDays(a,b.days-1),ja=jToday(a),jz=jToday(z);return `<div class="task plan-row"><span style="flex:1"><b>${b.subject}</b><div class="small">${jText(ja[0],ja[1],ja[2])} تا ${jText(jz[0],jz[1],jz[2])} — ${faDigits(b.days)} روز — ${faDigits(b.pages||0)} صفحه</div></span></div>`}).join(''):'<p class="muted">هنوز برنامه‌ای ساخته نشده.</p>';
+ const sj=jToday(new Date());
+ return `<div class="card"><h2>🗓️ برنامه‌چین</h2><p>مضمون، تعداد صفحات، تعداد روز و تاریخ شروع را وارد کن؛ برنامه خودکار در تقویم قرار می‌گیرد.</p><div class="grid"><input id="planStartY" inputmode="numeric" value="${faDigits(sj[0])}" placeholder="سال"><select id="planStartM">${months.map((m,i)=>`<option value="${i+1}" ${i+1===sj[1]?'selected':''}>${m}</option>`).join('')}</select><input id="planStartD" inputmode="numeric" value="${faDigits(sj[2])}" placeholder="روز"></div></div>
+ <div class="card"><h3>مضامین پشت‌سرهم</h3><div id="blockRows"><div class="grid plan-input"><input placeholder="مثلاً تفسیر"><input type="number" min="1" placeholder="تعداد روز"><input type="number" min="1" placeholder="تعداد صفحات"><button class="danger" onclick="this.parentElement.remove()">🗑️</button></div></div><br><button onclick="addPlanBlock()">+ افزودن مضمون</button> <button class="primary" onclick="makeBlockPlan()">چیدن روی تقویم</button></div>
+ <div class="card"><h3>برنامه فعلی</h3>${rows}${p?`<br><button class="danger" onclick="deletePlan()">🗑️ حذف کردن برنامه</button> <button class="primary" onclick="shiftPlanFromToday()">↪️ اگر عقب افتادم، از امروز دوباره بچین</button>`:''}</div>`;
+}
+function goals(){
+ return `<div class="card"><h2>🎯 اهداف سالانه</h2><div class="grid"><input id="g_year" placeholder="هدف سالانه جدید"><button class="primary" onclick="addGoalYear()">افزودن</button></div><hr>${db.goalYear.map((g,i)=>`<div class="task"><input type="checkbox" ${g.done?'checked':''} onchange="toggleGoalYear(${i})"><span class="${g.done?'done':''}" style="flex:1">${g.title}</span><button class="danger" onclick="delGoalYear(${i})">🗑️</button></div>`).join('')||'<p class="muted">هنوز هدف سالانه‌ای ثبت نشده.</p>'}</div>`;
+}
+function addGoalYear(){let v=g_year.value.trim();if(!v)return;db.goalYear.push({title:v,done:false});save();render()}
+function toggleGoalYear(i){db.goalYear[i].done=!db.goalYear[i].done;save();render()}
+function delGoalYear(i){db.goalYear.splice(i,1);save();render()}
+function progress(){
+ let vals=[],totalMin=0,totalTasks=0,done=0;
+ for(let i=13;i>=0;i--){let d=addDays(new Date(),-i),x=dayData(gKey(d));vals.push({d,j:jToday(d),m:x.minutes||0});totalMin+=x.minutes||0;totalTasks+=x.tasks.length;done+=x.tasks.filter(t=>t.done).length}
+ const max=Math.max(60,...vals.map(x=>x.m));
+ let jy=jToday(new Date())[0];let monthsData=months.map((name,mi)=>{let mins=0,t=0,dn=0;for(const k in db.days){let j=keyToJ(k);if(j[0]===jy&&j[1]===mi+1){let x=db.days[k];mins+=x.minutes||0;t+=x.tasks.length;dn+=x.tasks.filter(z=>z.done).length}}return {name,mins,t,dn,p:t?Math.round(dn/t*100):0};});let maxMon=Math.max(1,...monthsData.map(x=>x.mins));let monthChart=`<div class="monthchart">${monthsData.map(x=>`<div class="mcol" title="${x.name}: ${faDigits(x.mins)} دقیقه، ${faDigits(x.p)}٪ انجام کارها"><div class="mval">${faDigits(x.mins)}</div><div class="mbar" style="height:${Math.max(3,Math.round(x.mins/maxMon*130))}px;width:100%"></div><span>${x.name}</span><span class="small">${faDigits(x.p)}٪</span></div>`).join('')}</div>`;return `<div class="card"><h2>پیشرفت ماهانه ${faDigits(jy)}</h2>${monthChart}</div><div class="card"><h2>پیشرفت ۱۴ روز اخیر</h2><table><tr><th>تاریخ</th><th>دقیقه مطالعه</th><th>نمودار</th></tr>${vals.map(x=>`<tr><td>${faDigits(x.j[2])} ${months[x.j[1]-1]}</td><td>${faDigits(x.m)}</td><td><div class="progress"><div class="bar" style="width:${Math.min(100,x.m/max*100)}%"></div></div></td></tr>`).join('')}</table><hr><p>مجموع مطالعه: <b>${faDigits(totalMin)}</b> دقیقه</p><p>نسبت انجام کارها: <b>${faDigits(totalTasks?Math.round(done/totalTasks*100):0)}٪</b></p></div>`;
+}
+
+function countdown(){
+ return `<div class="card"><h2>⏳ تاریخ‌های مهم</h2><p class="muted">تاریخ‌ها را با تقویم هجری شمسی افغانستان وارد کن.</p>
+ <div class="grid"><input id="eventTitle" placeholder="مثلاً امتحان سالانه"><input id="eventY" inputmode="numeric" placeholder="سال، مثلاً ۱۴۰۶"><select id="eventM">${months.map((m,i)=>`<option value="${i+1}">${m}</option>`).join('')}</select><input id="eventD" inputmode="numeric" placeholder="روز"></div><br><button class="primary" onclick="addEvent()">افزودن تاریخ مهم</button></div>
+ ${db.events.map((e,i)=>countdownEvent(e,i)).join('')}`;
+}
+function countdownEvent(e,i){
+ const target=dateFromJ(e.y,e.m,e.d),now=new Date();
+ const n=Math.ceil((new Date(target.getFullYear(),target.getMonth(),target.getDate())-new Date(now.getFullYear(),now.getMonth(),now.getDate()))/86400000);
+ let text=n>0?`${faDigits(n)} روز باقی مانده`:n===0?'امروز است':`${faDigits(Math.abs(n))} روز گذشته`;
+ return `<div class="card ${n>=0&&n<=30?'important':''}"><div class="row"><div><h3>${e.title}</h3><b>${text}</b><div class="small">${jText(e.y,e.m,e.d)}</div></div><button class="danger" onclick="delEvent(${i})">حذف</button></div></div>`;
+}
+function addEvent(){
+ let title=eventTitle.value.trim(),y=Number(enDigits(eventY.value)),m=Number(eventM.value),d=Number(enDigits(eventD.value));
+ if(!title||!y||!m||!d||d>jMonthDays(y,m)||d<1)return alert('تاریخ را درست وارد کن.');
+ db.events.push({id:Date.now()+'',title,y,m,d});save();render();
+}
+function delEvent(i){db.events.splice(i,1);save();render()}
+
+
+function saveClassActivity(){
+ db.classActivities=db.classActivities||{};
+ db.classActivities[db.settings.selected]=homeActivity.value.trim();
+ save(); render();
+}
+function planStudy(){
+ const subject=document.getElementById('planSubject').value.trim();
+ const pages=Number(enDigits(document.getElementById('planPages').value));
+ const days=Number(enDigits(document.getElementById('planDays').value));
+ const start=document.getElementById('planStart').value.trim()||'امروز';
+ if(!subject||!pages||!days||pages<1||days<1){
+   document.getElementById('planResult').innerHTML='<p class="muted">نام مضمون، تعداد صفحات و تعداد روز را درست وارد کن.</p>';return;
+ }
+ const base=Math.floor(pages/days), rem=pages%days;
+ let out=`<h4>برنامه پیشنهادی ${subject}</h4><p>از ${start}، به‌طور میانگین <b>${faDigits(Math.ceil(pages/days))} صفحه</b> در روز.</p><table><tr><th>روز</th><th>مطالعه</th><th>مرور</th></tr>`;
+ for(let i=1;i<=days;i++){
+   const todayPages=base+(i<=rem?1:0);
+   const review=i===1?'مرور کوتاه همان روز':i%3===0?'مرور مطالب روزهای قبل':'مرور ۱۵–۲۰ دقیقه‌ای';
+   out+=`<tr><td>روز ${faDigits(i)}</td><td>${faDigits(todayPages)} صفحه</td><td>${review}</td></tr>`;
+ }
+ out+=`</table><p><b>روش مرور:</b> آخر هر روز ۱۰–۲۰ دقیقه مرور، هر ۳ روز یک مرور جمعی، و روز آخر مرور کل مطالب.</p>
+ <button class="primary" onclick="saveGeneratedPlan('${subject.replace(/'/g,"\\'")}',${pages},${days})">ذخیره این برنامه در ماهانه</button>`;
+ document.getElementById('planResult').innerHTML=out;
+}
+function saveGeneratedPlan(subject,pages,days){
+ const [y,m]=currentJ();
+ db.monthly.push({id:Date.now()+'',title:`${subject}: ${pages} صفحه در ${days} روز + مرور`,y,m,generated:true});
+ save();
+ document.getElementById('planResult').insertAdjacentHTML('beforeend','<p><b>✓ برنامه ذخیره شد.</b></p>');
+}
+function ai(){
+ const key=db.settings.selected, all=Object.values(db.days),tasks=all.reduce((s,x)=>s+x.tasks.length,0),done=all.reduce((s,x)=>s+x.tasks.filter(t=>t.done).length,0),ratio=tasks?Math.round(done/tasks*100):0;
+ const kankor=db.events.find(e=>e.id==='kankor'),target=kankor?dateFromJ(kankor.y,kankor.m,kankor.d):null;
+ const today0=new Date();today0.setHours(0,0,0,0);const target0=target?new Date(target.getFullYear(),target.getMonth(),target.getDate()):null;const daysLeft=target0?Math.max(0,daysBetween(today0,target0)):0;
+ const pp=getPlanForDate(key), mistakes=db.mistakes[key]||'';
+ let advice='برنامه را واقع‌بینانه نگه دار، کارهای اصلی را اول انجام بده و در پایان روز علت عقب‌ماندگی‌ها را بررسی کن.';
+ if(pp&&pp.status==='missed') advice='امروز یک بخش از برنامه انجام نشده است؛ خودت را سرزنش نکن. علت را پیدا کن و برای فردا یک جبران کوچک و عملی تعیین کن.';
+ else if(ratio<50&&tasks>10) advice='تعداد کارهای ثبت‌شده زیاد و میزان انجام پایین است؛ کارها را کوچک‌تر و مشخص‌تر کن.';
+ else if(daysLeft<90) advice='به زمان کانکور نزدیک‌تر شده‌ای؛ اولویت را به مباحث مهم، مرور و تست بده و برنامه را بیش از ظرفیتت سنگین نکن.';
+ return `<div class="card"><h2>🤖 مربی هوشمند</h2><p>${advice}</p><div class="grid"><div class="stat">تا کانکور<br><b>${faDigits(daysLeft)} روز</b></div><div class="stat">انجام کارها<br><b>${faDigits(ratio)}٪</b></div></div></div>
+ <div class="card"><h3>💬 پرسیدن از مربی</h3><textarea id="aiq" rows="3" placeholder="هر سؤال درسی یا مربوط به برنامه‌ریزی‌ات را بنویس..."></textarea><br><br><button class="primary" onclick="askAI()">پرسیدن</button><div id="answer"></div></div>
+ <div class="card"><h3>💡 پیشنهاد مربی برای بهتر شدن برنامه</h3><ul><li>برنامه را بر اساس زمان واقعی آزاد خودت تنظیم کن.</li><li>هر روز یک کار اصلی و چند کار کوچک داشته باش.</li><li>اگر برنامه‌ای انجام نشد، دلیلش را ثبت کن نه اینکه فقط آن را حذف کنی.</li><li>مباحث سخت ریاضی و فیزیک را در زمان‌های ثابت قرار بده.</li></ul></div>
+ <div class="card"><h3>⚠️ اشتباهات امروز</h3><p>${mistakes||'<span class="muted">برای امروز هنوز اشتباهی ثبت نکرده‌ای.</span>'}</p><button class="primary" onclick="showTab('daily')">ثبت یا ویرایش اشتباهات</button></div>
+ <div class="card"><h3>🌙 بررسی پایان روز</h3><p>در صورت فعال بودن اعلان‌های مرورگر، مربی در ساعت ۱۱:۳۰ شب یادآوری می‌کند. سپس این پرسش‌ها را پاسخ بده:</p><ol><li>امروز چه مقدار از برنامه را انجام دادی؟</li><li>بزرگ‌ترین اشتباه امروز چه بود؟</li><li>چه چیزی باعث شد وقتت تلف شود؟</li><li>فردا مهم‌ترین کار تو چیست؟</li><li>برای بهتر شدن فردا چه تغییری می‌دهی؟</li></ol><button class="primary" onclick="eveningCheckIn()">شروع بررسی امروز</button> <button onclick="requestNotifications()">🔔 فعال‌کردن اعلان‌ها</button></div>`;
+}
+function eveningCheckIn(){const m=db.mistakes[db.settings.selected]||'';const d=dayData(db.settings.selected);document.getElementById('answer').innerHTML=`<div class="card"><h4>بررسی امروز</h4><p>کارهای انجام‌شده: ${faDigits(d.tasks.filter(x=>x.done).length)} از ${faDigits(d.tasks.length)}</p><textarea id="checkin" rows="6" placeholder="پاسخ‌ها و نکته‌های امروزت را بنویس...">${m}</textarea><br><br><button class="primary" onclick="saveCheckin()">ذخیره بررسی</button></div>`}
+function saveCheckin(){db.mistakes[db.settings.selected]=document.getElementById('checkin').value.trim();save();render()}
+function classLog(){
+ const j=currentJ(), text=(db.classActivities||{})[db.settings.selected]||'';
+ document.getElementById('answer').innerHTML=`<div class="card"><h4>فعالیت ${jText(j[0],j[1],j[2])}</h4><textarea id="classActivity" rows="4" placeholder="امروز در صنف چه خواندی؟">${text}</textarea><br><br><button class="primary" onclick="saveClassLog()">ذخیره</button></div>`;
+}
+function saveClassLog(){
+ db.classActivities=db.classActivities||{};
+ db.classActivities[db.settings.selected]=document.getElementById('classActivity').value.trim();
+ save();render();
+}
+function askAI(){
+ let q=(document.getElementById('aiq')?.value||'').trim(),ans='کارهای مهم را اولویت بده، حجم مطالعه را قابل انجام نگه دار و علت انجام نشدن کارها را ثبت کن تا برنامه فردا بهتر شود.';
+ if(/کانکور|کنکور/.test(q))ans='برای کانکور، زمان باقی‌مانده، مباحث باقی‌مانده و میزان تسلطت را در نظر بگیر. مطالعه، مرور و تست را با هم پیش ببر و برنامه را بیش از ظرفیتت سنگین نکن.';
+ else if(/ریاضی|فیزیک/.test(q))ans='ریاضی و فیزیک را در زمان‌های ثابت روزانه نگه دار و بخش اصلی زمان را به حل تمرین و تست اختصاص بده.';
+ else if(/خسته|استرس|ناامید|حوصله/.test(q))ans='اگر خسته یا بی‌حوصله‌ای، حجم کار را موقتاً کوچک کن و فقط یک کار مشخص را شروع کن. استراحت و خواب کافی هم بخشی از برنامه موفق است.';
+ document.getElementById('answer').innerHTML=`<div class="card"><b>پیشنهاد مربی:</b><p>${ans}</p></div>`;
+}
+
+function dailyClassReminder(){
+ const key=db.settings.selected;
+ db.classActivities=db.classActivities||{};
+ const todayKey=gKey(new Date());
+ if(db.lastReminderDay!==todayKey){
+   db.lastReminderDay=todayKey; save();
+   setTimeout(()=>{
+     if(!db.classActivities[todayKey]){
+       alert('یادآوری صنف 📚\nفعالیت امروز صنف را ثبت کن تا چیزی از درس‌های امروز فراموش نشود.');
+     }
+   },500);
+ }
+}
+function requestNotifications(){if(!('Notification' in window))return alert('این مرورگر اعلان را پشتیبانی نمی‌کند.');Notification.requestPermission().then(p=>{if(p==='granted')alert('اعلان‌های مربی من فعال شد.');else alert('اجازه اعلان داده نشد. از تنظیمات مرورگر اجازه اعلان را فعال کن.');});}
+function notify(title,body){if('Notification' in window&&Notification.permission==='granted')new Notification(title,{body});}
+function notificationLoop(){const now=new Date();const key=now.getFullYear()+'-'+pad(now.getMonth()+1)+'-'+pad(now.getDate());const stamp=key+'-'+now.getHours()+'-'+now.getMinutes();if(now.getHours()===5&&now.getMinutes()===15&&db.lastMorningNotify!==stamp){db.lastMorningNotify=stamp;save();notify('مربی من','صبح بخیر! قبل از مطالعه هدف اصلی امروزت را مشخص کن و با آرامش شروع کن.');}if(now.getHours()===23&&now.getMinutes()===30&&db.lastEveningNotify!==stamp){db.lastEveningNotify=stamp;save();notify('مربی من','وقت بررسی امروز است. اشتباهات و پیشرفت امروزت را بررسی کن.');}}
+setInterval(notificationLoop,30000);
+render();
+dailyClassReminder();
+</script>
+
+<script>
+let deferredInstallPrompt=null;
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredInstallPrompt=e;const b=document.getElementById('installPwaBar');if(b)b.style.display='block';});
+document.addEventListener('click',async e=>{if(e.target && e.target.id==='installPwaBtn' && deferredInstallPrompt){deferredInstallPrompt.prompt();await deferredInstallPrompt.userChoice;deferredInstallPrompt=null;const b=document.getElementById('installPwaBar');if(b)b.style.display='none';}});
+window.addEventListener('appinstalled',()=>{const b=document.getElementById('installPwaBar');if(b)b.style.display='none';});
+if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));}
+</script>
+</body>
+</html>
